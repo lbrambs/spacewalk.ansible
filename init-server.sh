@@ -162,7 +162,10 @@ if [ ! "$(which ansible-playbook)" ]; then
 fi
 
 # Install ansible local run file
-printf "[spacewalk-server]\nlocalhost ansible_connection=local\ndeprecation_warnings=False\n" > /etc/ansible/hosts
+printf "[spacewalk-server]\nlocalhost ansible_connection=local\n" > /etc/ansible/hosts
+
+# Install ansible.cfg file to mute the deprecation warnings for the time beig (bad practise I know but not a priority)
+printf "[defaults]\ndeprecation_warnings=False\n" > /etc/ansible/ansible.cfg
 
 # Run ansible
 ANSIBLE=$(which ansible-pull)
