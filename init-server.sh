@@ -162,7 +162,7 @@ if [ ! "$(which ansible-playbook)" ]; then
 fi
 
 # Install ansible local run file
-printf "[spacewalk-server]\nlocalhost ansible_connection=local\n" > /etc/ansible/hosts
+printf "[spacewalk-server]\nlocalhost ansible_connection=local\ndeprecation_warnings=False\n" > /etc/ansible/hosts
 
 # Run ansible
 ANSIBLE=$(which ansible-pull)
