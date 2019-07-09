@@ -1,5 +1,5 @@
 ---
-- hosts: spacewalk-server
+- hosts: SpacewalkServer
   sudo: yes
   pre_tasks:
     - hostname: name=spacewalk-server
