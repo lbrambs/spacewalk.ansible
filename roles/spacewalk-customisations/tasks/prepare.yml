@@ -19,8 +19,16 @@
     group: root 
     mode: 0755
 
+- name: copy upstart script
+  template: 
+    src: pgpass.j2 
+    dest: /root/.pgpass
+    owner: root 
+    group: root 
+    mode: 0600
+
 - name: Apply bugfix for 1661347
-  shell: "PGPASSWORD={{spacewalk_db_password}}; /usr/bin/psql -h {{spacewalk_db_host}} -p {{spacewalk_db_port}} -U {{spacewalk_db_user}} -W {{spacewalk_db_name}} /var/tmp/apt_bugfix.sql"
+  shell: "/usr/bin/psql /var/tmp/apt_bugfix.sql"
 
 - name: create admin account
   command: sh /root/account.sh
