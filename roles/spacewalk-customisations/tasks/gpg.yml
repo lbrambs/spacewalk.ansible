@@ -40,7 +40,7 @@
 
 - name: "GPG Generate: set defaut gpg options"
   template:
-    src: {{ role_path }}/files/gpg.conf
+    src: "{{ role_path }}/files/gpg.conf"
     dest: /root/.gnupg/gpg.conf
     mode: 0600
     owner: root
