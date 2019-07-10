@@ -1,5 +1,5 @@
 ---
-spacewalk_host: spacewalk-test
+spacewalk_host: spacewalk-server
 spacewalk_admin_email: root@localhost
 spacewalk_admin_password: admin
 spacewalk_admin_firstname: John
