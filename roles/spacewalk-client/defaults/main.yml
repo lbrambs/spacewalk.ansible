@@ -1,6 +1,6 @@
 ---
 spacewalk_admin_email: root@localhost
 spacewalk_hostname: spacewalk-test
-spacewalk_ip: 192.168.84.115
+spacewalk_ip: 10.8.152.30
 
 gpg_pubkeyfileexport: spacewalk.asc
