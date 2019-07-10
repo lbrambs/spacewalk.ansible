@@ -1,7 +1,7 @@
 ---
 spacewalk_admin_email: root@localhost
-spacewalk_hostname: spacewalk-test
-spacewalk_ip: 192.168.84.115
+spacewalk_hostname: spacewalk-server
+spacewalk_ip: 10.8.152.30
 
 # Proxy settings
 # TRACEBACK_EMAIL; see spacewalk_admin_email
