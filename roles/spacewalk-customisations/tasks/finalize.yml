@@ -2,7 +2,7 @@
  
 - name: Install spacewalk api script
   copy: 
-    src: {{ role_path }}/files/swapi.py
+    src: "{{ role_path }}"/files/swapi.py
     dest: /usr/sbin/swapi.py
     owner: root 
     group: root 
@@ -21,7 +21,7 @@
 - name: Add reposync cronjob file under /etc/cron.d/
   cron:
     name: reposync
-    weekday: *
+    weekday: "*"
     minute: 0
     hour: 3
     user: root
