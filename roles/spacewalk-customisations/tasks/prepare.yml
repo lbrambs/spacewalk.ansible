@@ -28,7 +28,7 @@
     mode: 0600
 
 - name: Apply bugfix for 1661347
-  shell: "/usr/bin/psql /var/tmp/apt_bugfix.sql"
+  shell: "/usr/bin/psql -d {{ spacewalk_db_name }} -U {{ spacewalk_db_user }} < /var/tmp/apt_bugfix.sql"
 
 - name: create admin account
   command: sh /root/account.sh
