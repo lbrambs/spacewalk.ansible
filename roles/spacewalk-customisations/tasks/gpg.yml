@@ -47,7 +47,7 @@
 
 - name: "GPG Generate: copy default template for gpg key generation"
   template:
-    src: gen-key-script
+    src: gen-key-script.j2
     dest: /root/.gnupg/gen-key-script
     mode: 0600
     owner: root
