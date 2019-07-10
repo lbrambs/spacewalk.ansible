@@ -2,7 +2,7 @@
  
 - name: Install spacewalk api script
   copy: 
-    src: "{{ role_path }}"/files/swapi.py
+    src: "{{ role_path }}/files/swapi.py"
     dest: /usr/sbin/swapi.py
     owner: root 
     group: root 
