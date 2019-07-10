@@ -1,7 +1,7 @@
 ---
 # Based on ansible recipe: https://github.com/juju4/ansible-gpgkey_generate
 
-- name: GPG Generate: check entropy state
+- name: "GPG Generate: check entropy state"
   command: "cat /proc/sys/kernel/random/entropy_avail"
   changed_when: false
   register: entropy
