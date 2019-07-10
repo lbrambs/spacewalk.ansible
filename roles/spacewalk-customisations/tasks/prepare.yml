@@ -1,0 +1,42 @@
+---
+- name: Install dependencies
+  yum: 
+    name: ['spacecmd', 'jq']
+
+- name: Copy sql file to fix bug 1661347
+  template: 
+    src: apt_bugfix.sql.j2
+    dest: /var/tmp/apt_bugfix.sql
+    owner: root 
+    group: root 
+    mode: 0600
+
+- name: Copy admin account creation script
+  template: 
+    src: account.sh.j2 
+    dest: /root/account.sh 
+    owner: root 
+    group: root 
+    mode: 0755
+
+- name: Apply bugfix for 1661347
+  shell: "PGPASSWORD={{spacewalk_db_password}}; /usr/bin/psql -h {{spacewalk_db_host}} -p {{spacewalk_db_port}} -U {{spacewalk_db_user}} -W {{spacewalk_db_name}} /var/tmp/apt_bugfix.sql"
+
+- name: create admin account
+  command: sh /root/account.sh
+
+- name: Install trusted SSL certs
+  get_url: 
+    url: http://localhost/pub/RHN-ORG-TRUSTED-SSL-CERT
+    dest: /usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT
+
+- name: cleanup sql file for bug 1661347
+  file: 
+    path: /var/tmp/apt_bugfix.sql
+    state: absent
+
+- name: cleanup admin account script
+  file: 
+    path: /root/account.sh
+    state: absent
+

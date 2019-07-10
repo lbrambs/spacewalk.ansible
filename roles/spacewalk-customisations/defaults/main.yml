@@ -1,4 +1,5 @@
 ---
+spacewalk_host: spacewalk-test
 spacewalk_admin_email: root@localhost
 spacewalk_admin_password: admin
 spacewalk_admin_firstname: John
@@ -19,6 +20,17 @@ spacewalk_db_host: localhost
 spacewalk_db_port: 5432
 spacewalk_enable_tftp: Y
 spacewalk_scripts_dir: /opt/spacewalk-scripts/
+
+gpg_realname: "Spacewalk GPG"
+gpg_useremail: {{ spacewalk_admin_email }}
+gpg_passphrase: {{ spacewalk_admin_password }}
+gpg_pubkeyfile: spacewalk.pub
+gpg_privkeyfile: spacewalk.priv
+gpg_pubkeyfileexport: spacewalk.asc
+
+gpg_keylength: 2048
+gpg_subkeylength: 2048
+gpg_expire: 0
 
 spacewalk_repo_info:
   - {name: 'CentOS_6', label: 'centos-6', repo: 'CentOS_6', repo_url: 'http://mirror.ox.ac.uk/sites/mirror.centos.org/6/os/x86_64/', arch: 'x86_64', checksum: 'sha256'}

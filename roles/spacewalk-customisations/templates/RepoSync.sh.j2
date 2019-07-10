@@ -1,0 +1,85 @@
+#!/bin/sh
+
+GPG_PASS='{{ gpg_passphrase }}'
+USERNAME="admin"
+PASSWORD="{{ spacewalk_admin_password }}"
+
+# try to create the lock and check the outcome
+LOCKFILE=/var/run/spacewalk_sync.lock
+#lockfile -r 0 ${LOCKFILE} 1>/dev/null 2>&1
+#status=$?
+#if [ ${status} -ne 0 ] ;then
+if [ -e "$LOCKFILE" ]; then
+        echo "Another instance already running. Aborting."
+        exit 1
+else
+        touch "$LOCKFILE"
+fi
+trap "rm ${LOCKFILE}" EXIT
+
+
+#Fetch channels
+CHANNELS=$(/usr/sbin/swapi.py --format "%(label)s" channel.listAllChannels)
+
+for channel in $CHANNELS
+do
+  #Fetch repo details for channel
+  REPO_DETAIL=$(/usr/sbin/swapi.py channel.software.listChannelRepos --args=$channel)
+  SOURCE_URL=$(echo $REPO_DETAIL | jq -r '.[] | .sourceUrl')
+  TYPE=$(echo $REPO_DETAIL | jq -r '.[] | .type')
+
+  # Sync repo
+  /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
+  
+  # Auto sign deb type repos
+  if [ "${TYPE}" == "deb" ]; then
+  
+	echo "SecureApt Repo signing started for channel: ${channel}"
+  
+	SOURCE_DETAILS=$(curl --silent ${SOURCE_URL}/Release)
+	DEB_CODE=$(echo "${SOURCE_DETAILS}" | grep "Archive:" | cut -d' ' -f2)
+	DEB_VER=$(echo "${SOURCE_DETAILS}" | grep "Version:" | cut -d' ' -f2)
+	DEB_LABEL=$(echo "${SOURCE_DETAILS}" | grep "Label:" | cut -d' ' -f2)
+    DEB_ORIG=$(echo "${SOURCE_DETAILS}" | grep "Origin:" | cut -d' ' -f2)
+	DEB_ARCH=$(echo "${SOURCE_DETAILS}" | grep "Architecture:" | cut -d' ' -f2)
+	
+    REPOPATH="/var/cache/rhn/repodata/${channel}/"
+	DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %z")
+	
+	HEADER="Origin: $DEB_ORIG
+	Label: $DEB_LABEL
+	Suite: $channel
+	Version: $DEB_VER
+	Codename: $DEB_CODE
+	Date: ${DATE}
+	Architectures: $DEB_ARCH
+	Components: repodata
+	MD5Sum:"
+
+	PACKAGES_MD5=($(md5sum ${REPOPATH}Packages))
+	PACKAGES_SIZE=$(stat -c%s ${REPOPATH}Packages)
+	PACKAGESGZ_MD5=($(md5sum ${REPOPATH}Packages.gz))
+	PACKAGESGZ_SIZE=$(stat -c%s ${REPOPATH}Packages.gz)
+	PACKAGES_SHA256=($(sha256sum ${REPOPATH}Packages))
+	PACKAGESGZ_SHA256=($(sha256sum ${REPOPATH}Packages.gz))
+
+	# write Release file with MD5s
+	rm -rf ${REPOPATH}Release
+	echo -e "${HEADER}" > ${REPOPATH}Release
+	echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
+	echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
+	echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
+	echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
+	echo -e "SHA256:" >> ${REPOPATH}Release
+	echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
+	echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
+	echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
+	echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
+
+	# write the signature for Release file
+	rm -rf ${REPOPATH}Release.gpg
+	echo $GPG_PASS | gpg --armor --detach-sign -o ${REPOPATH}Release.gpg --batch --no-tty --passphrase-fd 0 --sign ${REPOPATH}Release
+	echo "Repo signed at: $(date)"
+  fi
+  
+done

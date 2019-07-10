@@ -1,0 +1,29 @@
+---
+ 
+- name: Install spacewalk api script
+  copy: 
+    src: {{ role_path }}/files/swapi.py
+    dest: /usr/sbin/swapi.py
+    owner: root 
+    group: root 
+    mode: 0755
+
+- name: Install reposync script
+  template: 
+    src: RepoSync.sh.j2
+    dest: /usr/sbin/RepoSync.sh
+    owner: root 
+    group: root 
+    mode: 0755
+
+- include: gpg.yml
+
+- name: Add reposync cronjob file under /etc/cron.d/
+  cron:
+    name: reposync
+    weekday: *
+    minute: 0
+    hour: 3
+    user: root
+    job: "/usr/sbin/RepoSync.sh"
+    cron_file: ansible_reposync

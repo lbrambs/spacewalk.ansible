@@ -1,3 +1,5 @@
 ---
-  - include: customisations.yml
-  - include: debian-sync.yml
+  - include: prepare.yml
+  - include: rhel.yml
+  - include: deb.yml
+  - include: finalize.yml

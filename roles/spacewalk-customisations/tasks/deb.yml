@@ -1,0 +1,64 @@
+---
+- name: Add deb base channels
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- softwarechannel_create -n {{item.name}} -l {{item.label}} -a {{item.arch}} -c sha512
+  ignore_errors: true
+  with_items: "{{spacewalk_deb_repo_info}}"
+
+- name: Add deb child channels
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- softwarechannel_create -n {{item.name}} -p {{item.parent}} -l {{item.label}} -a {{item.arch}} -c sha512
+  ignore_errors: true
+  with_items: "{{spacewalk_child_deb_repo_info}}"
+
+- name: Add Repositories
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- repo_create -n {{item.name}} -u {{item.repo_url}} -t deb
+  ignore_errors: true
+  with_items: "{{ spacewalk_deb_repo_info | union(spacewalk_child_deb_repo_info) }}"
+
+- name: Add deb activation keys
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- activationkey_create -n {{item.label}} -b {{item.label}} -d {{item.name}}
+  ignore_errors: true
+  with_items: "{{spacewalk_deb_repo_info}}"
+
+- name: Add activation keys for deb child channels
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- activationkey_create -n {{item.label}} -b {{item.parent}} -d {{item.name}}
+  ignore_errors: true
+  with_items: "{{spacewalk_child_deb_repo_info}}"
+
+- name: Associate deb repos to channels
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- softwarechannel_addrepo {{item.label}} {{item.repo}}
+  with_items: "{{ spacewalk_deb_repo_info | union(spacewalk_child_deb_repo_info) }}"
+  
+- name: Associate child channels with activationkeys
+  command: spacecmd --user=admin --password={{spacewalk_admin_password}} -- activationkey_addchildchannels {{item.activationkey}}  {{item.label}}
+  ignore_errors: true
+  with_items: "{{spacewalk_child_deb_repo_info}}"
+   
+- name: Ubuntu Errata - install templates
+  template: 
+    src: errata-import.py.j2
+    dest: /usr/sbin/errata-import.py
+    owner: root 
+    group: root 
+    mode: 0755
+  
+- name: Ubuntu Errata - install scripts
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - { src: '{{ role_path }}/files/parseUbuntu.py', dest: '/usr/sbin/parseUbuntu.py' }
+    - { src: '{{ role_path }}/files/spacewalk-ubuntu-errata.sh', dest: '/usr/sbin/spacewalk-ubuntu-errata.sh' }
+    
+- name: Add Ubuntu errata cronjob file under /etc/cron.d/
+  cron:
+    name: UbuntuErrata
+    weekday: *
+    minute: 0
+    hour: 6
+    user: root
+    job: "/usr/sbin/spacewalk-ubuntu-errata.sh"
+    cron_file: ansible_ubuntu_errata
+

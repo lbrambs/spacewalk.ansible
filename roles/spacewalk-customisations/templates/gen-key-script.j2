@@ -1,0 +1,17 @@
+{{ ansible_managed | comment }}
+%echo Generating a basic OpenPGP key
+Key-Type: 1
+Key-Length: {{ gpg_keylength }}
+Subkey-Type: 1
+Subkey-Length: {{ gpg_subkeylength }}
+Name-Real: {{ gpg_realname }}
+Name-Email: {{ gpg_useremail }}
+Expire-Date: {{ gpg_expire }}
+{% if gpg_passphrase is defined and gpg_passphrase %}
+Passphrase: {{ gpg_passphrase }}
+{% else %}
+%no-ask-passphrase
+{% endif %}
+%pubring {{ gpg_pubkeyfile }}
+%commit
+%echo done
