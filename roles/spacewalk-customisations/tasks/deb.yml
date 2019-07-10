@@ -55,7 +55,7 @@
 - name: Add Ubuntu errata cronjob file under /etc/cron.d/
   cron:
     name: UbuntuErrata
-    weekday: *
+    weekday: "*"
     minute: 0
     hour: 6
     user: root
