@@ -13,5 +13,6 @@ Passphrase: {{ gpg_passphrase }}
 %no-ask-passphrase
 {% endif %}
 %pubring {{ gpg_pubkeyfile }}
+%secring {{ gpg_privkeyfile }}
 %commit
 %echo done
