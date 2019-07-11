@@ -8,6 +8,14 @@
     group: root 
     mode: 0755
 
+- name: Install spacewalk api config
+  template: 
+    src: swapi.conf.j2
+    dest: /etc/swapi.conf
+    owner: root 
+    group: root 
+    mode: 0644
+
 - name: Install reposync script
   template: 
     src: RepoSync.sh.j2
