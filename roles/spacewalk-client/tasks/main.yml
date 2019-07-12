@@ -108,7 +108,7 @@
     - { src: '{{ role_path }}/files/packages.py', dest: '/usr/share/rhn/actions/packages.py' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Start OSAD client
+- name: Start OSAD client (CentOS only)
   systemd:
     name: osad
     state: started
@@ -116,10 +116,26 @@
     masked: no
   when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == "7" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
   
-- name: Start OSAD client
+- name: Start OSAD client (CentOS only)
   service:
     name: osad
     state: started
     enabled: yes
     masked: no
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
+
+- name: Enable rhnsd client (Ubuntu only)
+  systemd:
+    name: rhnsd.timer
+    state: started
+    enabled: yes
+    masked: no
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
+  
+- name: Enable rhnsd client (Ubuntu only)
+  service:
+    name: rhnsd.timer
+    state: started
+    enabled: yes
+    masked: no
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
