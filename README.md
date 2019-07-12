@@ -11,7 +11,11 @@ Changes:
 - Default admin password is admin
 - Default company name is Spacewalk
 - The default information can be changed in this file: ./roles/spacewalk-customisations/defaults/main.yml
-- Added support for Ubuntu Bionic
+- Added support for Ubuntu 16 & 18
+- CentOS uses the OSAD client
+- Ubuntu 18 uses the rhn_check script via a systemd timer
+- Ubuntu 16 uses a cronjob to run the rhn_check script
+- Removed support for Ubuntu 12 & 14, no one should be using these anymore.. if you: upgrade to at least 16.04
 
 Spacewalk Server Hardware / Virtual sizing advisement:
 - 2 CPU, 4GB of ram minimum (8GB+ recommended), 300GB of disk 
@@ -39,15 +43,14 @@ Install a full Spacewalk server on CentOS 7 and also adds customizations:
 - CentOS 7 base+extras+epel+updates repos, channel and activation key
 - Ubuntu 18.06 base+security repos, channel and activation key (and repo sync scripts)
 - Ubuntu 16.06 base+security repos, channel and activation key (and repo sync scripts)
-- Ubuntu 14.04 base+security repos, channel and activation key (and repo sync scripts)
-- Ubuntu 12.04 base+security repos, channel and activation key (and repo sync scripts)
 
 Thanks to geerlingguy's iptables role, which is included here to configure the firewall on the server.
 
 #### To do:
+- Build OSAD client for Ubuntu 18, Ubuntu 16 OSAD client available at: https://launchpad.net/~mj-casalogic/+archive/ubuntu/spacewalk-ubuntu/+packages
 
-- Check Ubuntu support to client role on versions 12.04, 14.04, 16.04 and 18.04
-- Add a lazy people script for: SpaceWalk proxy and client
+
+
 
 What my inventory (/etc/ansible/hosts) looks like:
 
