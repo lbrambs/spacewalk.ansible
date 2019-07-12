@@ -124,18 +124,26 @@
     masked: no
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
 
-- name: Enable rhnsd client (Ubuntu only)
+- name: Enable rhnsd client via systemd timer (Ubuntu 18 only)
   systemd:
     name: rhnsd.timer
     state: started
     enabled: yes
     masked: no
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
-  
-- name: Enable rhnsd client (Ubuntu only)
-  service:
-    name: rhnsd.timer
-    state: started
-    enabled: yes
-    masked: no
+
+#For Ubuntu16 clients, we do not want them to connect all at once
+- set_fact:
+    cron_minute: "{{ 59 | random }}"
+    cron_hour: "{{ 4 | random }}"
+    
+- name: Enable rhn_check client via cron (Ubuntu 16 only)
+  cron:
+    name: rhn_check
+    weekday: "*"
+    minute: "{{ cron_minute }}"
+    hour: "{{ cron_hour }}"
+    user: root
+    job: "/usr/sbin/rhn_check"
+    cron_file: ansible_rhn_check
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
