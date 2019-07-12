@@ -90,6 +90,12 @@
     validate_certs: no
   when: ansible_distribution == "Ubuntu"
 
+- name: Create RHN actions directory
+  file:
+    path: /usr/share/rhn/actions
+    state: directory
+  when: ansible_distribution == "Ubuntu"
+
 - name: Ubuntu clients - Install Ubuntu errata enhancement
   copy: 
     src: "{{ item.src }}"
