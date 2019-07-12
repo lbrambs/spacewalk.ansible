@@ -87,6 +87,7 @@
   apt_key:
     url: https://{{ spacewalk_hostname }}/pub/{{ gpg_pubkeyfileexport }}
     state: present
+    validate_certs: no
   when: ansible_distribution == "Ubuntu"
 
 - name: Ubuntu clients - Install Ubuntu errata enhancement
