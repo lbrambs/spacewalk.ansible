@@ -1,9 +1,6 @@
 #!/bin/sh
 #TODO.md
 
-# Always check if a clean install can be updated
-yum -y update
-
 if [ "$1" = "-v" ]; then
   ANSIBLE_VERSION="${2}"
 fi
