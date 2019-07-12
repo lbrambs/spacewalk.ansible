@@ -15,7 +15,7 @@ Changes:
 - CentOS uses the OSAD client
 - Ubuntu 18 uses the rhn_check script via a systemd timer
 - Ubuntu 16 uses a cronjob to run the rhn_check script
-- Removed support for Ubuntu 12 & 14, no one should be using these anymore.. if you: upgrade to at least 16.04
+- Removed support for Ubuntu 12 & 14, no one should be using these anymore.. if you are: upgrade to at least 16.04
 
 Spacewalk Server Hardware / Virtual sizing advisement:
 - 2 CPU, 4GB of ram minimum (8GB+ recommended), 300GB of disk 
