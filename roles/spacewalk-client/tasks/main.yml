@@ -77,6 +77,7 @@
 - name: Install OSAD packages (Ubuntu 16)
   apt:
     deb: ['/tmp/pyjabber_0.5.0-1.4-xenial_all.deb', '/tmp/osad_5.11.27-xenial_all.deb']
+    state: installed
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
 
 - name: Install OSAD packages (Ubuntu 18)
@@ -120,7 +121,7 @@
 
 - name: Add an Apt signing key, uses whichever key is at the URL
   apt_key:
-    url: https://{{ spacewalk_hostname }}/pub/{{ gpg_pubkeyfileexport }}
+    url: http://{{ spacewalk_hostname }}/pub/{{ gpg_pubkeyfileexport }}
     state: present
     validate_certs: no
   when: ansible_distribution == "Ubuntu"
