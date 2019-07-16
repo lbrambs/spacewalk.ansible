@@ -54,6 +54,41 @@
     state: present
   when: ansible_distribution == "Ubuntu"
 
+- name: Download OSAD packages (Ubuntu 16)
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  with_items:
+    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-xenial_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-xenial_all.deb' }
+    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.27-xenial_all.deb', dest: '/tmp/osad_5.11.27-xenial_all.deb' }
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+
+- name: Download OSAD packages (Ubuntu 18)
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  with_items:
+    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-bionic_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-bionic_all.deb' }
+    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.108-bionic_all.deb', dest: '/tmp/osad_5.11.108-bionic_all.deb' }
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- name: Install OSAD packages (Ubuntu 16)
+  apt:
+    deb: ['/tmp/pyjabber_0.5.0-1.4-xenial_all.deb', '/tmp/osad_5.11.27-xenial_all.deb']
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+
+- name: Install OSAD packages (Ubuntu 18)
+  apt:
+    deb: ['/tmp/pyjabber_0.5.0-1.4-bionic_all.deb', '/tmp/osad_5.11.108-bionic_all.deb']
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- name: remove local deb files
+  file:
+    path: ['/tmp/osad_5.11.108-bionic_all.deb', '/tmp/osad_5.11.27-xenial_all.deb', '/tmp/pyjabber_0.5.0-1.4-bionic_all.deb', '/tmp/pyjabber_0.5.0-1.4-xenial_all.deb']
+    state: absent
+
 - name: Install Spacewalk CA certificate from server
   yum:
     name: "http://{{ spacewalk_hostname }}/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm"
@@ -108,7 +143,7 @@
     - { src: '{{ role_path }}/files/packages.py', dest: '/usr/share/rhn/actions/packages.py' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Start OSAD client (CentOS only)
+- name: Start OSAD client (systemd only)
   systemd:
     name: osad
     state: started
@@ -116,7 +151,7 @@
     masked: no
   when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == "7" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
   
-- name: Start OSAD client (CentOS only)
+- name: Start OSAD client (service only)
   service:
     name: osad
     state: started
@@ -124,20 +159,12 @@
     masked: no
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
 
-- name: Enable rhnsd client via systemd timer (Ubuntu 18 only)
-  systemd:
-    name: rhnsd.timer
-    state: started
-    enabled: yes
-    masked: no
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
-
-#For Ubuntu16 clients, we do not want them to connect all at once
+#For all clients, we do not want them to connect all at once
 - set_fact:
     cron_minute: "{{ 59 | random }}"
     cron_hour: "{{ 4 | random }}"
     
-- name: Enable rhn_check client via cron (Ubuntu 16 only)
+- name: Enable rhn_check client via cron (required for check-in)
   cron:
     name: rhn_check
     weekday: "*"
@@ -146,4 +173,3 @@
     user: root
     job: "/usr/sbin/rhn_check"
     cron_file: ansible_rhn_check
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
