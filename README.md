@@ -12,10 +12,14 @@ Changes:
 - Default company name is Spacewalk
 - The default information can be changed in this file: ./roles/spacewalk-customisations/defaults/main.yml
 - Added support for Ubuntu 16 & 18
-- CentOS uses the OSAD client
-- Ubuntu 18 uses the rhn_check script via a systemd timer
-- Ubuntu 16 uses a cronjob to run the rhn_check script
+- CentOS 6/7 use the OSAD client
+- Ubuntu 16/18 use the OSAD client
+- APT repos are signed
+- Major bugfixes for Ubuntu systems, OSAD database, etc
+- rhn_check cron is used for checking in once every 4 hours (OSAD doesn't do this)
+- rhn_check cron has a delay of 0-239 minutes to prevent the spacewalk server to become overloaded
 - Removed support for Ubuntu 12 & 14, no one should be using these anymore.. if you are: upgrade to at least 16.04
+- 
 
 Spacewalk Server Hardware / Virtual sizing advisement:
 - 2 CPU, 4GB of ram minimum (8GB+ recommended), 300GB of disk 
@@ -47,7 +51,7 @@ Install a full Spacewalk server on CentOS 7 and also adds customizations:
 Thanks to geerlingguy's iptables role, which is included here to configure the firewall on the server.
 
 #### To do:
-- Build OSAD client for Ubuntu 18, Ubuntu 16 OSAD client available at: https://launchpad.net/~mj-casalogic/+archive/ubuntu/spacewalk-ubuntu/+packages
+- Fix IPTables role to add a blocking rule at the end
 
 
 
