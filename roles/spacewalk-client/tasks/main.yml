@@ -20,37 +20,9 @@
     state: present
   when: ansible_distribution == "CentOS"
 
-- name: Add Ubuntu 16.04 Spacewalk Client repo key (special thanks to OpenSuse)
-  apt_key: 
-    url: http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_16.04/Release.key 
-    state: present 
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
-  
-- name: Add Ubuntu 16.04 Spacewalk Client repo (special thanks to OpenSuse)
-  apt_repository: 
-    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_16.04/ /' 
-    state: present 
-    filename: spacewalk2.9-debclients.list
-    update_cache: yes
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
-
-- name: Add Ubuntu 18.04 Spacewalk Client repo key (special thanks to OpenSuse)
-  apt_key: 
-    url: http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_18.04/Release.key 
-    state: present 
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
-  
-- name: Add Ubuntu 18.04 Spacewalk Client repo (special thanks to OpenSuse)
-  apt_repository: 
-    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_18.04/ /' 
-    state: present 
-    filename: spacewalk2.9-debclients.list
-    update_cache: yes
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
-
 - name: Install packages for Ubuntu
   apt:       
-    name: ['rhn-client-tools', 'rhn-check', 'rhn-setup', 'rhnsd', 'apt-transport-spacewalk', 'rhncfg', 'rhncfg-actions']
+    name: ['apt-transport-spacewalk', 'rhn-client-tools', 'rhnsd', 'python-rhn']
     state: present
   when: ansible_distribution == "Ubuntu"
 
