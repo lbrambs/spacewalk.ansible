@@ -30,8 +30,8 @@
   cron:
     name: reposync
     weekday: "*"
-    minute: 0
-    hour: 3
+    minute: "0"
+    hour: "19"
     user: root
     job: "/usr/sbin/RepoSync.sh"
     cron_file: ansible_reposync
