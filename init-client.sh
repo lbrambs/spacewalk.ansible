@@ -91,7 +91,10 @@ if [ ! "$(which ansible-playbook)" ]; then
       easy_install pip
     fi
     # If python-keyczar apt package does not exist, use pip
-    [ -z "$( apt-cache search python-keyczar )" ] && sudo pip install python-keyczar
+    [ -z "$( apt-cache search python-keyczar )" ] && pip install python-keyczar
+
+    # Required for Ubuntu 16 to fix get_url issues
+    pip install -U pyopenssl
 
     # Install passlib for encrypt
     apt_install build-essential
