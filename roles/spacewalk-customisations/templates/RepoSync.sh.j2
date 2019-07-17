@@ -26,8 +26,13 @@ do
   SOURCE_URL=$(echo $REPO_DETAIL | jq -r '.[] | .sourceUrl')
   TYPE=$(echo $REPO_DETAIL | jq -r '.[] | .type')
 
-  # Sync repo
-  /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
+  # Sync repo, trottle when in office hours to 20mbit
+  currenttime=$(date +%H:%M)
+  if [[ "$currenttime" > "19:00" ]] || [[ "$currenttime" < "06:30" ]]; then
+        /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
+  else
+        /bin/trickle -s -d 20480 /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
+  fi
   
   # Auto sign deb type repos
   if [ "${TYPE}" == "deb" ]; then
