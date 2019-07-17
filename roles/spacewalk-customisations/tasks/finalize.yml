@@ -30,7 +30,7 @@
   cron:
     name: reposync
     weekday: "*"
-    minute: "0"
+    minute: "02"
     hour: "19"
     user: root
     job: "/usr/sbin/RepoSync.sh"
