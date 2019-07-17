@@ -19,7 +19,6 @@ Changes:
 - rhn_check cron is used for checking in once every 4 hours (OSAD doesn't do this)
 - rhn_check cron has a delay of 0-239 minutes to prevent the spacewalk server to become overloaded
 - Removed support for Ubuntu 12 & 14, no one should be using these anymore.. if you are: upgrade to at least 16.04
-- 
 
 Spacewalk Server Hardware / Virtual sizing advisement:
 - 2 CPU, 4GB of ram minimum (8GB+ recommended), 300GB of disk 
