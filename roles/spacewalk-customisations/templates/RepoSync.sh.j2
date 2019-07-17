@@ -46,17 +46,9 @@ do
 	DEB_ARCH=$(echo "${SOURCE_DETAILS}" | grep "Architecture:" | cut -d' ' -f2)
 	
 	REPOPATH="/var/cache/rhn/repodata/${channel}/"
-	DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %z")
+	DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %Z")
 	
-	HEADER="Origin: $DEB_ORIG
-	Label: $DEB_LABEL
-	Suite: $channel
-	Version: $DEB_VER
-	Codename: $DEB_CODE
-	Date: ${DATE}
-	Architectures: $DEB_ARCH
-	Components: repodata
-	MD5Sum:"
+	HEADER="Origin: $DEB_ORIG\nLabel: $DEB_LABEL\nSuite: $channel\nVersion: $DEB_VER\nCodename: $DEB_CODE\nDate: ${DATE}\nArchitectures: $DEB_ARCH\nComponents: repodata\nMD5Sum:"
 
 	PACKAGES_MD5=($(md5sum ${REPOPATH}Packages))
 	PACKAGES_SIZE=$(stat -c%s ${REPOPATH}Packages)
