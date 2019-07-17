@@ -156,18 +156,13 @@
     enabled: yes
     masked: no
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
-
-#For all clients, we do not want them to connect all at once
-- set_fact:
-    cron_minute: "{{ 59 | random }}"
-    cron_hour: "{{ 4 | random }}"
-    
+  
 - name: Enable rhn_check client via cron (required for check-in)
   cron:
     name: rhn_check
     weekday: "*"
-    minute: "{{ cron_minute }}"
-    hour: "{{ cron_hour }}"
+    minute: "0"
+    hour: "*/4"
     user: root
-    job: "/usr/sbin/rhn_check"
+    job: "sleep $(( ( RANDOM % 240 ) ))m ; /usr/sbin/rhn_check"
     cron_file: ansible_rhn_check
