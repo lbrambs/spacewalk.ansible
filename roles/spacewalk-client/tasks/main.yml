@@ -75,14 +75,11 @@
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
 
 - name: Install OSAD packages (Ubuntu 16)
-  apt:
-    deb: ['/tmp/pyjabber_0.5.0-1.4-xenial_all.deb', '/tmp/osad_5.11.27-xenial_all.deb']
-    state: installed
+  shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-xenial_all.deb /tmp/osad_5.11.27-xenial_all.deb
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
 
 - name: Install OSAD packages (Ubuntu 18)
-  apt:
-    deb: ['/tmp/pyjabber_0.5.0-1.4-bionic_all.deb', '/tmp/osad_5.11.108-bionic_all.deb']
+  shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-bionic_all.deb /tmp/osad_5.11.108-bionic_all.deb
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
 
 - name: remove local deb files
