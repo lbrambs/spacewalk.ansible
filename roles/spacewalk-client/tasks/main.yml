@@ -25,17 +25,7 @@
     name: ['rhn-client-tools', 'rhn-check', 'rhn-setup', 'rhnsd', 'apt-transport-spacewalk', 'rhncfg', 'rhncfg-actions', 'osad']
     state: present
   when: ansible_distribution == "Ubuntu"
-
-- name: Download OSAD packages (Ubuntu 16)
-  get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.dest }}"
-    mode: '0644'
-  with_items:
-    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-xenial_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-xenial_all.deb' }
-    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.27-xenial_all.deb', dest: '/tmp/osad_5.11.27-xenial_all.deb' }
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
-
+  
 - name: Install Spacewalk CA certificate from server
   yum:
     name: "http://{{ spacewalk_hostname }}/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm"
