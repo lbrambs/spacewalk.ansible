@@ -20,10 +20,44 @@
     state: present
   when: ansible_distribution == "CentOS"
 
+- name: Add Ubuntu Spacewalk Client repo key (special thanks to OpenSuse)
+  apt_key: 
+    url: http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/Release.key 
+    state: present 
+  when: ansible_distribution == "Ubuntu"
+  
+- name: Add Ubuntu Spacewalk Client repo (special thanks to OpenSuse)
+  apt_repository: 
+    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
+    state: present 
+    filename: spacewalk2.9-debclients.list
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
 - name: Install packages for Ubuntu
   apt:       
-    name: ['apt-transport-spacewalk', 'rhn-client-tools', 'rhnsd', 'python-rhn']
+    name: ['rhn-client-tools', 'rhn-check', 'rhn-setup', 'rhnsd', 'apt-transport-spacewalk', 'rhncfg', 'rhncfg-actions']
     state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Remove Ubuntu Spacewalk Client repo
+  apt_repository: 
+    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
+    state: absent 
+    filename: spacewalk2.9-debclients.list
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Fix issue with apt-transport-spacewalk (packages infinitly listed as upgradable)
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - { src: '{{ role_path }}/files/pre_invoke.py', dest: '/usr/lib/apt-spacewalk/pre_invoke.py' }
+    - { src: '{{ role_path }}/files/post_invoke.py', dest: '/usr/lib/apt-spacewalk/post_invoke.py' }
   when: ansible_distribution == "Ubuntu"
 
 - name: Download OSAD packages (Ubuntu 16)
@@ -79,12 +113,12 @@
   when: ansible_distribution == "Ubuntu"
 
 - name: register with spacewalk server
-  command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-centos-{{ansible_distribution_major_version}}-epel
+  command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-centos-{{ansible_distribution_major_version}}
   when: ansible_distribution == "CentOS"
   ignore_errors: true
 
 - name: register with spacewalk server
-  command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-ubuntu-{{ansible_distribution_version.split('.')|join('')}}-security
+  command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-ubuntu-{{ansible_distribution_version.split('.')|join('')}}
   when: ansible_distribution == "Ubuntu"
   ignore_errors: true
 
