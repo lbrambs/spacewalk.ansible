@@ -84,6 +84,10 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -m limit --limit 15/minute -j LOG --log-level 7 --log-prefix "Dropped by firewall: "
 {% endif %}
 
+{% if firewall_drop_remaining %}
+iptables -A INPUT -j DROP
+{% endif %}
+
 # Configure IPv6 if ip6tables is present.
 if [ -x "$(which ip6tables 2>/dev/null)" ]; then
 
@@ -124,6 +128,10 @@ if [ -x "$(which ip6tables 2>/dev/null)" ]; then
   {% if firewall_log_dropped_packets %}
   # Log other incoming requests (all of which are dropped) at 15/minute max.
   ip6tables -A INPUT -m limit --limit 15/minute -j LOG --log-level 7 --log-prefix "Dropped by firewall: "
+  {% endif %}
+  
+  {% if firewall_drop_remaining %}
+  ip6tables -A INPUT -j DROP
   {% endif %}
 
 fi
