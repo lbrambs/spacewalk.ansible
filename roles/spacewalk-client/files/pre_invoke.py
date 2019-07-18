@@ -71,7 +71,7 @@ def update_sources_list():
         if len(channels):
             for source in sw_source:
                 sources.remove(source)
-            sources.add(type='deb',
+            sources.add(type='deb [trusted=yes]',
                         uri='spacewalk://' + get_server(),
                         dist='channels:',
                         orig_comps=channels,
