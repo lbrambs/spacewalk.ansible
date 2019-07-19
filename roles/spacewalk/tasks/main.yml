@@ -101,6 +101,6 @@
       dest: "{{ item.dest }}"
     with_items:
       - { src: '{{ role_path }}/files/osad_5.11.108-bionic_all.deb', dest: '/var/www/html/pub/osad_5.11.108-bionic_all.deb' }
-      - { src: '{{ role_path }}/files/osad_5.11.27-xenial_all.deb', dest: '/var/www/html/pub/osad_5.11.27-xenial_all.deb' }
+      - { src: '{{ role_path }}/files/osad_5.11.108-xenial_all.deb', dest: '/var/www/html/pub/osad_5.11.108-xenial_all.deb' }
       - { src: '{{ role_path }}/files/pyjabber_0.5.0-1.4-bionic_all.deb', dest: '/var/www/html/pub/pyjabber_0.5.0-1.4-bionic_all.deb' }
       - { src: '{{ role_path }}/files/pyjabber_0.5.0-1.4-xenial_all.deb', dest: '/var/www/html/pub/pyjabber_0.5.0-1.4-xenial_all.deb' }
