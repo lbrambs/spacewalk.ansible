@@ -24,6 +24,25 @@
     group: root 
     mode: 0755
 
+- name: Apt Errata - install templates
+  template: 
+    src: errata-import.py.j2
+    dest: /usr/sbin/errata-import.py
+    owner: root 
+    group: root 
+    mode: 0755
+  
+- name: Apt Errata - install scripts
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - { src: '{{ role_path }}/files/parseUbuntu.py', dest: '/usr/sbin/parseUbuntu.py' }
+    - { src: '{{ role_path }}/files/spacewalk-ubuntu-errata.sh', dest: '/usr/sbin/spacewalk-ubuntu-errata.sh' }
+
 - name: Install reposync script
   template: 
     src: RepoSync.sh.j2
