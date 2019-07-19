@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 #
 # APT::Update::Pre-Invoke hook for updating sources.list
 #
@@ -16,9 +16,11 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 
+from __future__ import print_function
+
 import sys
 import os
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 from aptsources import sourceslist
 import apt_pkg
 
@@ -37,10 +39,9 @@ from up2date_client import up2dateErrors
 def get_channels():
     """Return channels associated with a machine"""
     try:
-        channels = ['main']
+        channels = []
         for channel in rhnChannel.getChannelDetails():
-            if channel['parent_channel']:
-                channels.append(channel['label'])
+            channels.append(channel['label'])
         return channels
     except up2dateErrors.Error:
         return []
@@ -66,19 +67,20 @@ def update_sources_list():
             source.set_enabled(False)
             sw_source.append(source)
 
+    for source in sw_source:
+        sources.remove(source)
     if up2dateAuth.getSystemId():
         channels = get_channels()
         if len(channels):
-            for source in sw_source:
-                sources.remove(source)
-            sources.add(type='deb',
+            for chan in channels:
+                sources.add(type='deb [arch=all]',
                         uri='spacewalk://' + get_server(),
-                        dist='channels:',
-                        orig_comps=channels,
+                        dist=chan,
+                        orig_comps=['repodata'],
                         file=get_conf_file()
                         )
     sources.save()
 
 if __name__ == '__main__':
-    print "Apt-Spacewalk: Updating sources.list"
+    print("Apt-Spacewalk: Updating sources.list")
     update_sources_list()
