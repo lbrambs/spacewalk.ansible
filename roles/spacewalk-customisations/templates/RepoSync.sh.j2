@@ -26,54 +26,104 @@ do
   SOURCE_URL=$(echo $REPO_DETAIL | jq -r '.[] | .sourceUrl')
   TYPE=$(echo $REPO_DETAIL | jq -r '.[] | .type')
 
-  # Sync repo, throttle when in office hours to 20mbit
+  # Sync repo, trottle when in office hours to 20mbit
   currenttime=$(date +%H:%M)
   if [[ "$currenttime" > "19:00" ]] || [[ "$currenttime" < "06:30" ]]; then
         /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
   else
         /bin/trickle -s -d 20480 /usr/bin/spacewalk-repo-sync --channel $channel --type $TYPE
   fi
-  
+
   # Auto sign deb type repos
   if [ "${TYPE}" == "deb" ]; then
-	echo "SecureApt Repo signing started for channel: ${channel}"
-  
-	SOURCE_DETAILS=$(curl --silent ${SOURCE_URL}/Release)
-	DEB_CODE=$(echo "${SOURCE_DETAILS}" | grep "Archive:" | cut -d' ' -f2)
-	DEB_VER=$(echo "${SOURCE_DETAILS}" | grep "Version:" | cut -d' ' -f2)
-	DEB_LABEL=$(echo "${SOURCE_DETAILS}" | grep "Label:" | cut -d' ' -f2)
-	DEB_ORIG=$(echo "${SOURCE_DETAILS}" | grep "Origin:" | cut -d' ' -f2)
-	DEB_ARCH=$(echo "${SOURCE_DETAILS}" | grep "Architecture:" | cut -d' ' -f2)
-	
-	REPOPATH="/var/cache/rhn/repodata/${channel}/"
-	DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %Z")
-	
-	HEADER="Origin: $DEB_ORIG\nLabel: $DEB_LABEL\nSuite: $channel\nVersion: $DEB_VER\nCodename: $DEB_CODE\nDate: ${DATE}\nArchitectures: $DEB_ARCH\nComponents: repodata\nMD5Sum:"
 
-	PACKAGES_MD5=($(md5sum ${REPOPATH}Packages))
-	PACKAGES_SIZE=$(stat -c%s ${REPOPATH}Packages)
-	PACKAGESGZ_MD5=($(md5sum ${REPOPATH}Packages.gz))
-	PACKAGESGZ_SIZE=$(stat -c%s ${REPOPATH}Packages.gz)
-	PACKAGES_SHA256=($(sha256sum ${REPOPATH}Packages))
-	PACKAGESGZ_SHA256=($(sha256sum ${REPOPATH}Packages.gz))
+        REPOPATH="/var/cache/rhn/repodata/${channel}/"
 
-	# write Release file with MD5s
-	rm -rf ${REPOPATH}Release
-	echo -e "${HEADER}" > ${REPOPATH}Release
-	echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
-	echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
-	echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
-	echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
-	echo -e "SHA256:" >> ${REPOPATH}Release
-	echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
-	echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
-	echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
-	echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
+        echo "SecureApt Repo signing started for channel: ${channel}"
 
-	# write the signature for Release file
-	rm -rf ${REPOPATH}Release.gpg
-	echo $GPG_PASS | gpg --armor --detach-sign -o ${REPOPATH}Release.gpg --batch --no-tty --passphrase-fd 0 --sign ${REPOPATH}Release
-	echo "Repo signed at: $(date)"
+        echo " - Flushing old repodata"
+        rm -f ${REPOPATH}Packages.gz
+        rm -f ${REPOPATH}Release.gpg
+        rm -f ${REPOPATH}Release
+
+        echo " - Forcing repodata regeneration"
+        /usr/sbin/regen-repodata.py -c ${channel} --force --url=https://{{ spacewalk_host }}/rpc/api --user=admin --password={{ spacewalk_admin_password }}
+
+        echo -n " - Waiting for repodata to be regenerated.."
+        while [ ! -f ${REPOPATH}Packages.gz ]
+        do
+          echo -n "."
+          sleep 1
+        done
+
+        echo
+        echo -n " - Packages.gz is being generated.."
+
+        while lsof -Fp ${REPOPATH}Packages.gz >/dev/null
+        do
+            echo -n "."
+            sleep 1
+        done
+
+        echo
+        echo " - Creating release file"
+
+        SOURCE_DETAILS=$(curl --silent ${SOURCE_URL}/Release)
+        DEB_CODE=$(echo "${SOURCE_DETAILS}" | grep "Archive:" | cut -d' ' -f2)
+        DEB_VER=$(echo "${SOURCE_DETAILS}" | grep "Version:" | cut -d' ' -f2)
+        DEB_LABEL=$(echo "${SOURCE_DETAILS}" | grep "Label:" | cut -d' ' -f2)
+        DEB_ORIG=$(echo "${SOURCE_DETAILS}" | grep "Origin:" | cut -d' ' -f2)
+        DEB_ARCH=$(echo "${SOURCE_DETAILS}" | grep "Architecture:" | cut -d' ' -f2)
+
+        DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %Z")
+
+        HEADER="Origin: $DEB_ORIG\nLabel: $DEB_LABEL\nSuite: $channel\nVersion: $DEB_VER\nCodename: $DEB_CODE\nDate: ${DATE}\nArchitectures: $DEB_ARCH\nComponents: repodata\nMD5Sum:"
+
+        PACKAGES_MD5=($(md5sum ${REPOPATH}Packages))
+        PACKAGES_SIZE=$(stat -c%s ${REPOPATH}Packages)
+        PACKAGESGZ_MD5=($(md5sum ${REPOPATH}Packages.gz))
+        PACKAGESGZ_SIZE=$(stat -c%s ${REPOPATH}Packages.gz)
+        PACKAGES_SHA256=($(sha256sum ${REPOPATH}Packages))
+        PACKAGESGZ_SHA256=($(sha256sum ${REPOPATH}Packages.gz))
+
+        # write Release file with MD5s
+        echo -e "${HEADER}" > ${REPOPATH}Release
+        echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
+        echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
+        echo -e " ${PACKAGES_MD5}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
+        echo -e " ${PACKAGESGZ_MD5}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
+        echo -e "SHA256:" >> ${REPOPATH}Release
+        echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-amd64/Packages" >> ${REPOPATH}Release
+        echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-amd64/Packages.gz" >> ${REPOPATH}Release
+        echo -e " ${PACKAGES_SHA256}\t${PACKAGES_SIZE}\trepodata/binary-i386/Packages" >> ${REPOPATH}Release
+        echo -e " ${PACKAGESGZ_SHA256}\t${PACKAGESGZ_SIZE}\trepodata/binary-i386/Packages.gz" >> ${REPOPATH}Release
+
+        echo " - Signing release file"
+
+        # write the signature for Release file
+        echo $GPG_PASS | gpg --armor --detach-sign -o ${REPOPATH}Release.gpg --batch --no-tty --passphrase-fd 0 --sign ${REPOPATH}Release
+        echo " - Repo signed at: $(date)"
   fi
-  
+
 done
+
+# Processes Ubuntu Errata and imports them to Spacewalk
+
+#make sure we have english locale
+export LC_TIME="en_US.utf8"
+# Obtains the current date and year.
+DATE=`date +"%Y-%B"`
+
+mkdir -p /opt/spacewalk-ubuntu-errata/errata
+
+# Fetches the errata data from ubuntu.com.
+rm -rf /opt/spacewalk-ubuntu-errata/errata/$DATE.txt
+rm -rf /opt/spacewalk-ubuntu-errata/errata/ubuntu-errata.xml
+curl https://lists.ubuntu.com/archives/ubuntu-security-announce/$DATE.txt.gz > /opt/spacewalk-ubuntu-errata/errata/$DATE.txt.gz
+gunzip -f /opt/spacewalk-ubuntu-errata/errata/$DATE.txt.gz
+# Processes and imports the errata.
+cd /opt/spacewalk-ubuntu-errata/ && \
+/usr/sbin/parseUbuntu.py errata/$DATE.txt
+/usr/sbin/errata-import.py 2>&1 | tee -a /var/log/ubuntu-errata.log
+
+rm -rf /opt/spacewalk-ubuntu-errata
