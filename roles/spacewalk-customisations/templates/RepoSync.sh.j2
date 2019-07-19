@@ -47,6 +47,7 @@ do
         rm -f ${REPOPATH}Packages.gz
         rm -f ${REPOPATH}Release.gpg
         rm -f ${REPOPATH}Release
+        rm -f ${REPOPATH}InRelease
 
         echo " - Forcing repodata regeneration"
         /usr/sbin/regen-apt-repodata.py -c ${channel} --force --url=https://{{ spacewalk_host }}/rpc/api --user=admin --password={{ spacewalk_admin_password }}
@@ -71,15 +72,16 @@ do
         echo " - Creating release file"
 
         SOURCE_DETAILS=$(curl --silent ${SOURCE_URL}/Release)
-        DEB_CODE=$(echo "${SOURCE_DETAILS}" | grep "Archive:" | cut -d' ' -f2)
         DEB_VER=$(echo "${SOURCE_DETAILS}" | grep "Version:" | cut -d' ' -f2)
         DEB_LABEL=$(echo "${SOURCE_DETAILS}" | grep "Label:" | cut -d' ' -f2)
         DEB_ORIG=$(echo "${SOURCE_DETAILS}" | grep "Origin:" | cut -d' ' -f2)
         DEB_ARCH=$(echo "${SOURCE_DETAILS}" | grep "Architecture:" | cut -d' ' -f2)
+        DEB_SUITE=$(echo "${SOURCE_DETAILS}" | grep "Archive:" | cut -d' ' -f2)
+        DEB_CODE="${DEB_SUITE%%-*}"
 
-        DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %Z")
+        DATE=$(date -u "+%a, %d %b %Y %H:%M:%S %z")
 
-        HEADER="Origin: $DEB_ORIG\nLabel: $DEB_LABEL\nSuite: $channel\nVersion: $DEB_VER\nCodename: $DEB_CODE\nDate: ${DATE}\nArchitectures: $DEB_ARCH\nComponents: repodata\nMD5Sum:"
+        HEADER="Origin: $DEB_ORIG\nLabel: $DEB_LABEL\nVersion: $DEB_VER\nCodename: $DEB_CODE\nArchitectures: $DEB_ARCH\nSuite: $channel\nComponents: repodata\nDate: $DATE\nMD5Sum:"
 
         PACKAGES_MD5=($(md5sum ${REPOPATH}Packages))
         PACKAGES_SIZE=$(stat -c%s ${REPOPATH}Packages)
@@ -103,7 +105,8 @@ do
         echo " - Signing release file"
 
         # write the signature for Release file
-        echo $GPG_PASS | gpg --armor --detach-sign -o ${REPOPATH}Release.gpg --batch --no-tty --passphrase-fd 0 --sign ${REPOPATH}Release
+        echo $GPG_PASS | gpg --digest-algo SHA256 --armor --detach-sign -o ${REPOPATH}Release.gpg --batch --no-tty --passphrase-fd 0 --sign ${REPOPATH}Release
+        echo $GPG_PASS | gpg --digest-algo SHA256 --detach-sign -o ${REPOPATH}InRelease --batch --no-tty --passphrase-fd 0 --clearsign ${REPOPATH}Release
         echo " - Repo signed at: $(date)"
   fi
 
