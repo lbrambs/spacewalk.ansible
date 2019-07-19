@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 #
 # DPkg::Post-Invoke hook for updating Debian package profile
 #
@@ -15,6 +15,8 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+
+from __future__ import print_function
 
 import sys
 
@@ -34,10 +36,10 @@ if __name__ == '__main__':
     systemid = up2dateAuth.getSystemId()
     if systemid:
         try:
-            print "Apt-Spacewalk: Updating package profile"
+            print("Apt-Spacewalk: Updating package profile")
             s = rhnserver.RhnServer()
             s.registration.update_packages(systemid,
                 pkgUtils.getInstalledPackageList(getArch=1))
-        except up2dateErrors.RhnServerException, e:
-            print "Package profile information could not be sent."
-            print str(e)
+        except up2dateErrors.RhnServerException as e:
+            print("Package profile information could not be sent.")
+            print(str(e))
