@@ -48,17 +48,17 @@
     update_cache: yes
   when: ansible_distribution == "Ubuntu"
 
-- name: Fix issue with apt-transport-spacewalk (packages infinitly listed as upgradable)
-  copy: 
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: root
-    group: root
-    mode: 0755
-  with_items:
-    - { src: '{{ role_path }}/files/pre_invoke.py', dest: '/usr/lib/apt-spacewalk/pre_invoke.py' }
-    - { src: '{{ role_path }}/files/post_invoke.py', dest: '/usr/lib/apt-spacewalk/post_invoke.py' }
-  when: ansible_distribution == "Ubuntu"
+#- name: Fix issue with apt-transport-spacewalk (packages infinitly listed as upgradable)
+#  copy: 
+#    src: "{{ item.src }}"
+#    dest: "{{ item.dest }}"
+#    owner: root
+#    group: root
+#    mode: 0755
+#  with_items:
+#    - { src: '{{ role_path }}/files/pre_invoke.py', dest: '/usr/lib/apt-spacewalk/pre_invoke.py' }
+#    - { src: '{{ role_path }}/files/post_invoke.py', dest: '/usr/lib/apt-spacewalk/post_invoke.py' }
+#  when: ansible_distribution == "Ubuntu"
 
 - name: Download OSAD packages
   get_url:
