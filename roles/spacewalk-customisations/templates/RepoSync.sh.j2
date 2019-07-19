@@ -47,7 +47,7 @@ do
         rm -f ${REPOPATH}Release
 
         echo " - Forcing repodata regeneration"
-        /usr/sbin/regen-repodata.py -c ${channel} --force --url=https://{{ spacewalk_host }}/rpc/api --user=admin --password={{ spacewalk_admin_password }}
+        /usr/sbin/regen-apt-repodata.py -c ${channel} --force --url=https://{{ spacewalk_host }}/rpc/api --user=admin --password={{ spacewalk_admin_password }}
 
         echo -n " - Waiting for repodata to be regenerated.."
         while [ ! -f ${REPOPATH}Packages.gz ]
