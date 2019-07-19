@@ -60,37 +60,23 @@
     - { src: '{{ role_path }}/files/post_invoke.py', dest: '/usr/lib/apt-spacewalk/post_invoke.py' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Download OSAD packages (Ubuntu 16)
+- name: Download OSAD packages
   get_url:
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
     mode: '0644'
   with_items:
-    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-xenial_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-xenial_all.deb' }
-    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.27-xenial_all.deb', dest: '/tmp/osad_5.11.27-xenial_all.deb' }
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
+    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb' }
+    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.108-{{ ansible_distribution_release }}_all.deb', dest: '/tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb' }
+  when: ansible_distribution == "Ubuntu"
 
-- name: Download OSAD packages (Ubuntu 18)
-  get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.dest }}"
-    mode: '0644'
-  with_items:
-    - { url: 'http://{{ spacewalk_hostname }}/pub/pyjabber_0.5.0-1.4-bionic_all.deb', dest: '/tmp/pyjabber_0.5.0-1.4-bionic_all.deb' }
-    - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.108-bionic_all.deb', dest: '/tmp/osad_5.11.108-bionic_all.deb' }
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
-
-- name: Install OSAD packages (Ubuntu 16)
-  shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-xenial_all.deb /tmp/osad_5.11.27-xenial_all.deb
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
-
-- name: Install OSAD packages (Ubuntu 18)
-  shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-bionic_all.deb /tmp/osad_5.11.108-bionic_all.deb
-  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+- name: Install OSAD packages
+  shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb /tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb
+  when: ansible_distribution == "Ubuntu"
 
 - name: remove local deb files
   file:
-    path: ['/tmp/osad_5.11.108-bionic_all.deb', '/tmp/osad_5.11.27-xenial_all.deb', '/tmp/pyjabber_0.5.0-1.4-bionic_all.deb', '/tmp/pyjabber_0.5.0-1.4-xenial_all.deb']
+    path: ['/tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb', '/tmp/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb']
     state: absent
 
 - name: Install Spacewalk CA certificate from server
