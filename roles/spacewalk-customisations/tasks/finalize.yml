@@ -16,6 +16,14 @@
     group: root 
     mode: 0644
 
+- name: Install regen-apt-repodata.py script
+  copy: 
+    src: "{{ role_path }}/files/regen-apt-repodata.py"
+    dest: /usr/sbin/regen-apt-repodata.py
+    owner: root 
+    group: root 
+    mode: 0755
+
 - name: Install reposync script
   template: 
     src: RepoSync.sh.j2
