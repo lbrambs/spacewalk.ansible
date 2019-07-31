@@ -73,7 +73,7 @@ def update_sources_list():
         channels = get_channels()
         if len(channels):
             for chan in channels:
-                sources.add(type='deb [arch=all]',
+                sources.add(type='deb',
                         uri='spacewalk://' + get_server(),
                         dist=chan,
                         orig_comps=['repodata'],
