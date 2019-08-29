@@ -83,7 +83,7 @@
   - name: Install spacewalk
     command: spacewalk-setup --answer-file=/var/tmp/answers
     args:
-      creates: /var/satellite
+      creates: /var/log/rhn/install_db.log
 
   - name: Making sure html pub exists
     file:
