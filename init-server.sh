@@ -75,7 +75,7 @@ if [ ! "$(which ansible-playbook)" ]; then
     fi
 
     # Upgrade pip
-    pip install --upgrade pip pbr six requests
+    pip install --upgrade pip
     
 
     # Install passlib for encrypt
@@ -128,9 +128,10 @@ if [ ! "$(which ansible-playbook)" ]; then
     fi
     # Fix for urllib3 issue
     pip uninstall -y urllib3
-    yum erase -y python-urllib3 python-requests
-    pip install --upgrade pbr
-    pip install urllib3 requests
+    yum erase -y python-requests
+    pip install --upgrade pbr six
+    pip install requests
+    yum -y install python-urllib3
   fi
 
 fi
