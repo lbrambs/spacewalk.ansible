@@ -85,9 +85,6 @@
     args:
       creates: /var/satellite
 
-  - name: cleanup answers file
-    file: path="/var/tmp/answers" state=absent
-
   - name: Making sure html pub exists
     file:
       path: /var/www/html/pub
