@@ -65,7 +65,7 @@ if [ ! "$(which ansible-playbook)" ]; then
     # One more time with EPEL to avoid failures
     yum_makecache_retry
 
-    yum -y install python-pip python-jinja2 python-httplib2 python-keyczar python-paramiko git
+    yum -y install python-pip PyYAML python-jinja2 python-httplib2 python-keyczar python-paramiko git
     # If python-pip install failed and setuptools exists, try that
     if [ -z "$(which pip)" ] && [ -z "$(which easy_install)" ]; then
       yum -y install python-setuptools
@@ -76,11 +76,10 @@ if [ ! "$(which ansible-playbook)" ]; then
 
     # Upgrade pip
     pip install --upgrade pip
-    
 
     # Install passlib for encrypt
     yum -y groupinstall "Development tools"
-    yum -y install python-devel MySQL-python sshpass libffi-devel openssl-devel && pip install pysphere boto passlib dnspython
+    yum -y install python-devel MySQL-python sshpass libffi-devel openssl-devel && pip install pyrax pysphere boto passlib dnspython
 
     # Install Ansible module dependencies
     yum -y install bzip2 file findutils git gzip hg svn sudo tar which unzip xz zip libselinux-python
@@ -109,7 +108,7 @@ if [ ! "$(which ansible-playbook)" ]; then
     exit 1;
   fi
 
-  #pip install -q six --upgrade
+  pip install -q six --upgrade
   mkdir -p /etc/ansible/
   if [ -z "$ANSIBLE_VERSION" ]; then
     pip install -q ansible
@@ -127,11 +126,9 @@ if [ ! "$(which ansible-playbook)" ]; then
       yum install -y python-crypto python-paramiko
     fi
     # Fix for urllib3 issue
-    pip uninstall -y urllib3
-    yum erase -y python-requests
-    pip install --upgrade pbr six
-    pip install requests
-    yum -y install python-urllib3
+    pip uninstall -y urllib3 requests
+    yum erase -y python-urllib3
+    pip install -y urllib3 requests
   fi
 
 fi
