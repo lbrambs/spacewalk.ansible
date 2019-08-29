@@ -65,7 +65,7 @@ if [ ! "$(which ansible-playbook)" ]; then
     # One more time with EPEL to avoid failures
     yum_makecache_retry
 
-    yum -y install python-pip PyYAML python-jinja2 python-httplib2 python-keyczar python-paramiko git
+    yum -y install python-pip python-jinja2 python-httplib2 python-keyczar python-paramiko git
     # If python-pip install failed and setuptools exists, try that
     if [ -z "$(which pip)" ] && [ -z "$(which easy_install)" ]; then
       yum -y install python-setuptools
@@ -75,7 +75,8 @@ if [ ! "$(which ansible-playbook)" ]; then
     fi
 
     # Upgrade pip
-    pip install --upgrade pip
+    pip install --upgrade pip pbr six requests
+    
 
     # Install passlib for encrypt
     yum -y groupinstall "Development tools"
@@ -108,7 +109,7 @@ if [ ! "$(which ansible-playbook)" ]; then
     exit 1;
   fi
 
-  pip install -q six --upgrade
+  #pip install -q six --upgrade
   mkdir -p /etc/ansible/
   if [ -z "$ANSIBLE_VERSION" ]; then
     pip install -q ansible
