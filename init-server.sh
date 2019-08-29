@@ -80,7 +80,7 @@ if [ ! "$(which ansible-playbook)" ]; then
 
     # Install passlib for encrypt
     yum -y groupinstall "Development tools"
-    yum -y install python-devel MySQL-python sshpass libffi-devel openssl-devel && pip install pyrax pysphere boto passlib dnspython
+    yum -y install python-devel MySQL-python sshpass libffi-devel openssl-devel && pip install pysphere boto passlib dnspython
 
     # Install Ansible module dependencies
     yum -y install bzip2 file findutils git gzip hg svn sudo tar which unzip xz zip libselinux-python
@@ -127,9 +127,10 @@ if [ ! "$(which ansible-playbook)" ]; then
       yum install -y python-crypto python-paramiko
     fi
     # Fix for urllib3 issue
-    pip uninstall -y urllib3 requests
-    yum erase -y python-urllib3
-    pip install -y urllib3 requests
+    pip uninstall -y urllib3
+    yum erase -y python-urllib3 python-requests
+    pip install --upgrade pbr
+    pip install urllib3 requests
   fi
 
 fi
