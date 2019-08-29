@@ -32,16 +32,21 @@
     group: root 
     mode: 0755
   
-- name: Apt Errata - install scripts
+- name: Install parseUbuntu.py script
   copy: 
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: root
-    group: root
+    src: "{{ role_path }}/files/parseUbuntu.py"
+    dest: /usr/sbin/parseUbuntu.py
+    owner: root 
+    group: root 
     mode: 0755
-  with_items:
-    - { src: '{{ role_path }}/files/parseUbuntu.py', dest: '/usr/sbin/parseUbuntu.py' }
-    - { src: '{{ role_path }}/files/spacewalk-ubuntu-errata.sh', dest: '/usr/sbin/spacewalk-ubuntu-errata.sh' }
+
+- name: Install spacewalk-ubuntu-errata.py script
+  copy: 
+    src: "{{ role_path }}/files/spacewalk-ubuntu-errata.py"
+    dest: /usr/sbin/spacewalk-ubuntu-errata.sh
+    owner: root 
+    group: root 
+    mode: 0755
 
 - name: Install reposync script
   template: 
