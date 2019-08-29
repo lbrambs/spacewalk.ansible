@@ -80,10 +80,6 @@
       group: root 
       mode: 0600
 
-  - name: Fail
-    fail:
-      msg: Debugging, please run spacewalk-setup --answer-file=/var/tmp/answers manually
-    
   - name: Install spacewalk
     command: spacewalk-setup --answer-file=/var/tmp/answers
     args:
