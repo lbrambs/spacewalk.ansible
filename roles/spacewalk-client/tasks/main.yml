@@ -69,7 +69,7 @@
     update_cache: yes
   when: ansible_distribution == "Ubuntu"
 
-- name: (Ubuntu) Fix: packages infinitly listed as upgradable within apt-transport-spacewalk
+- name: (Ubuntu) Fix packages infinitly listed as upgradable within apt-transport-spacewalk
   copy: 
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
