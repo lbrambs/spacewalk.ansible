@@ -1,5 +1,5 @@
 ---
-- name: Ensure environment file exists
+- name: (All) Ensure environment file exists
   file:
     path: "{{ environment_file }}"
     owner: "{{ environment_file_owner }}"
@@ -8,7 +8,7 @@
   register: environment_file_result
   changed_when: environment_file_result.diff.before.state != "file"
 
-- name: Configuring environment
+- name: (All) Configuring environment
   lineinfile:
     dest: "{{ environment_file }}"
     regexp: "{{ item.regexp }}"
@@ -20,34 +20,34 @@
     - { regexp: '^LANG=', line: 'LANG="en_US.utf8"' }
     - { regexp: '^no_proxy=', line: 'no_proxy="127.0.0.1, localhost, {{ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])}}, {{ spacewalk_hostname }}"' }
 
-- name: Ensure spacewalk hostname in /etc/hosts
+- name: (All) Ensure spacewalk hostname in /etc/hosts
   lineinfile: dest=/etc/hosts regexp=^{{ spacewalk_ip }} line="{{ spacewalk_ip }} {{ spacewalk_hostname }}"
 
-- name: install CentOS spacewalk repository from URL
+- name: (CentOS) install spacewalk repository
   yum: name=https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.9-client/epel-{{ansible_distribution_major_version}}-x86_64/00911911-spacewalk-repo/spacewalk-client-repo-2.9-4.el{{ansible_distribution_major_version}}.noarch.rpm  state=present
   when: ansible_distribution == "CentOS"
 
-- name: install extra packages for enterprise linux (EPEL) from URL (CentOS 6)
+- name: (CentOS 6) install extra packages
   yum: name=http://dl.fedoraproject.org/pub/epel/6/{{ ansible_machine }}/epel-release-6-8.noarch.rpm state=present
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
 
-- name: install extra packages for enterprise linux (EPEL) (CentOS 7)
+- name: (CentOS 7) install extra packages
   yum: name=epel-release state=present
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
 
-- name: Install all packages for CentOS client
+- name: (CentOS) Install required client packages
   yum:
     name: ['rhn-client-tools', 'rhn-check', 'rhn-setup', 'rhnsd', 'm2crypto', 'yum-rhn-plugin', 'osad']
     state: present
   when: ansible_distribution == "CentOS"
 
-- name: Add Ubuntu Spacewalk Client repo key (special thanks to OpenSuse)
+- name: (Ubuntu) Add Spacewalk Client repo key
   apt_key: 
     url: http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/Release.key 
     state: present 
   when: ansible_distribution == "Ubuntu"
   
-- name: Add Ubuntu Spacewalk Client repo (special thanks to OpenSuse)
+- name: (Ubuntu) Add Spacewalk Client repo
   apt_repository: 
     repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
     state: present 
@@ -55,13 +55,13 @@
     update_cache: yes
   when: ansible_distribution == "Ubuntu"
 
-- name: Install packages for Ubuntu
+- name: (Ubuntu) Install packages
   apt:       
     name: ['rhn-client-tools', 'rhn-check', 'rhn-setup', 'rhnsd', 'apt-transport-spacewalk', 'rhncfg', 'rhncfg-actions']
     state: present
   when: ansible_distribution == "Ubuntu"
 
-- name: Remove Ubuntu Spacewalk Client repo
+- name: (Ubuntu) Remove Spacewalk Client repo
   apt_repository: 
     repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
     state: absent 
@@ -69,7 +69,7 @@
     update_cache: yes
   when: ansible_distribution == "Ubuntu"
 
-- name: Fix issue with apt-transport-spacewalk (packages infinitly listed as upgradable)
+- name: (Ubuntu) Fix: packages infinitly listed as upgradable within apt-transport-spacewalk
   copy: 
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -81,7 +81,7 @@
     - { src: '{{ role_path }}/files/post_invoke.py', dest: '/usr/lib/apt-spacewalk/post_invoke.py' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Download OSAD packages
+- name: (Ubuntu) Download OSAD packages
   get_url:
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
@@ -91,58 +91,58 @@
     - { url: 'http://{{ spacewalk_hostname }}/pub/osad_5.11.108-{{ ansible_distribution_release }}_all.deb', dest: '/tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Install OSAD packages
+- name: (Ubuntu) Install OSAD packages
   shell: dpkg -i /tmp/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb /tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb
   when: ansible_distribution == "Ubuntu"
 
-- name: remove local deb files
+- name: (Ubuntu) Remove local deb files
   file:
     path: ['/tmp/osad_5.11.108-{{ ansible_distribution_release }}_all.deb', '/tmp/pyjabber_0.5.0-1.4-{{ ansible_distribution_release }}_all.deb']
     state: absent
 
-- name: Install Spacewalk CA certificate from server
+- name: (CentOS) Install Spacewalk CA certificate from server
   yum:
     name: "http://{{ spacewalk_hostname }}/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm"
     state: present
   when: ansible_distribution == "CentOS"
 
-- name: Create rhn directory
+- name: (Ubuntu) Create rhn directory
   file:
     path: /usr/share/rhn
     state: directory
   when: ansible_distribution == "Ubuntu"
 
-- name: Install Spacewalk CA certificate from server
+- name: (Ubuntu) Install Spacewalk CA certificate
   get_url:
     url: http://{{ spacewalk_hostname }}/pub/RHN-ORG-TRUSTED-SSL-CERT
     dest: /usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT
     mode: 644
   when: ansible_distribution == "Ubuntu"
 
-- name: register with spacewalk server
+- name: (CentOS) register with spacewalk server
   command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-centos-{{ansible_distribution_major_version}}
   when: ansible_distribution == "CentOS"
   ignore_errors: true
 
-- name: register with spacewalk server
+- name: (Ubuntu) register with spacewalk server
   command: rhnreg_ks --serverUrl=http://{{ spacewalk_hostname }}/XMLRPC --activationkey=1-ubuntu-{{ansible_distribution_version.split('.')|join('')}}
   when: ansible_distribution == "Ubuntu"
   ignore_errors: true
 
-- name: Add an Apt signing key, uses whichever key is at the URL
+- name: (Ubuntu) Add an apt signing key
   apt_key:
     url: http://{{ spacewalk_hostname }}/pub/{{ gpg_pubkeyfileexport }}
     state: present
     validate_certs: no
   when: ansible_distribution == "Ubuntu"
 
-- name: Create RHN actions directory
+- name: (Ubuntu) Create RHN actions directory
   file:
     path: /usr/share/rhn/actions
     state: directory
   when: ansible_distribution == "Ubuntu"
 
-- name: Ubuntu clients - Install Ubuntu errata enhancement
+- name: (Ubuntu) Install errata enhancement for clients
   copy: 
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -154,7 +154,7 @@
     - { src: '{{ role_path }}/files/packages.py', dest: '/usr/share/rhn/actions/packages.py' }
   when: ansible_distribution == "Ubuntu"
 
-- name: Remove default ubuntu 16 repo's
+- name: (Ubuntu 16) Remove default repo's
   apt_repository:
     repo: "{{ item.repo }}"
     state: absent
@@ -172,7 +172,7 @@
     - { repo: 'deb http://security.ubuntu.com/ubuntu xenial-security multiverse' }
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "16"
 
-- name: Remove default ubuntu 18 repo's
+- name: (Ubuntu 18) Remove default repo's
   apt_repository:
     repo: "{{ item.repo }}"
     state: absent
@@ -189,8 +189,19 @@
     - { repo: 'deb http://security.ubuntu.com/ubuntu bionic-security universe' }
     - { repo: 'deb http://security.ubuntu.com/ubuntu bionic-security multiverse' }
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- name: (CentOS) Create archive directory for existing yum repos
+  file:
+    path: /etc/yum.repos.d/archive
+    state: directory
+  when: ansible_distribution == "CentOS"
+
+- name: (CentOS) Remove existing yum repos
+  shell: mv /etc/yum.repos.d/* /etc/yum.repos.d/archive
+  ignore_errors: yes
+  when: ansible_distribution == "CentOS"
   
-- name: Start OSAD client (systemd only)
+- name: (Systemd) Start OSAD client
   systemd:
     name: osad
     state: started
@@ -198,7 +209,7 @@
     masked: no
   when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == "7" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "18"
   
-- name: Start OSAD client (service only)
+- name: (Init) Start OSAD client
   service:
     name: osad
     state: started
@@ -206,7 +217,7 @@
     masked: no
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6" or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == "16"
   
-- name: Enable rhn_check client via cron (required for check-in)
+- name: (All) Enable rhn_check client via cron (required for check-in)
   cron:
     name: rhn_check
     weekday: "*"
