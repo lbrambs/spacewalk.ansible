@@ -1,5 +1,10 @@
 #!/bin/sh
-#TODO.md
+
+# Only run if root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
 
 # Always check if a clean install can be updated
 yum -y update
@@ -43,7 +48,7 @@ if [ "x$KITCHEN_LOG" = "xDEBUG" ] || [ "x$OMNIBUS_ANSIBLE_LOG" = "xDEBUG" ]; the
 fi
 
 if [ ! "$(which ansible-playbook)" ]; then
-  if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ] || [ -f /etc/oracle-release ] || [ -f /etc/system-release ]; then
+  if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]; then
 
     # Install required Python libs and pip
     # Fix EPEL Metalink SSL error
@@ -69,6 +74,9 @@ if [ ! "$(which ansible-playbook)" ]; then
       easy_install pip
     fi
 
+    # Upgrade pip
+    pip install --upgrade pip
+
     # Install passlib for encrypt
     yum -y groupinstall "Development tools"
     yum -y install python-devel MySQL-python sshpass libffi-devel openssl-devel && pip install pyrax pysphere boto passlib dnspython
@@ -77,48 +85,13 @@ if [ ! "$(which ansible-playbook)" ]; then
     yum -y install bzip2 file findutils git gzip hg svn sudo tar which unzip xz zip libselinux-python
     [ -n "$(yum search procps-ng)" ] && yum -y install procps-ng || yum -y install procps
 
-  elif [ -f /etc/debian_version ] || grep -qi ubuntu /etc/lsb-release || grep -qi ubuntu /etc/os-release; then
-    wait_for_cloud_init
-    dpkg_check_lock && apt-get update -q
-
-    # Install required Python libs and pip
-    apt_install python-pip python-yaml python-jinja2 python-httplib2 python-paramiko python-pkg-resources libffi-dev
-    [ -n "$( dpkg_check_lock && apt-cache search python-keyczar )" ] && apt_install python-keyczar
-    dpkg_check_lock && apt-cache search ^git$ | grep -q "^git\s" && apt_install git || apt_install git-core
-
-    # If python-pip install failed and setuptools exists, try that
-    if [ -z "$(which pip)" ] && [ -z "$(which easy_install)" ]; then
-      apt_install python-setuptools
-      easy_install pip
-    elif [ -z "$(which pip)" ] && [ -n "$(which easy_install)" ]; then
-      easy_install pip
-    fi
-    # If python-keyczar apt package does not exist, use pip
-    [ -z "$( apt-cache search python-keyczar )" ] && sudo pip install python-keyczar
-
-    # Install passlib for encrypt
-    apt_install build-essential
-    apt_install python-all-dev python-mysqldb sshpass && pip install pyrax pysphere boto passlib dnspython
-
-    # Install Ansible module dependencies
-    apt_install bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip python-selinux
-
-  elif [ -f /etc/SuSE-release ] ; then
-    zypper --quiet --non-interactive refresh
-
-    # Install required Python libs and pip
-    zypper --quiet --non-interactive install libffi-devel openssl-devel python-devel perl-Error
-    zypper --quiet --non-interactive install git || zypper --quiet --non-interactive install git-core
-
-    # If python-pip install failed and setuptools exists, try that
-    if [ -z "$(which pip)" ] && [ -z "$(which easy_install)" ]; then
-      zypper --quiet --non-interactive install python-setuptools
-      easy_install pip
-    elif [ -z "$(which pip)" ] && [ -n "$(which easy_install)" ]; then
-      easy_install pip
-    fi
-
   elif [ -f /etc/fedora-release ]; then
+    echo
+    echo "!! Warning !!"
+    echo "For this spacewalk server installation fedora is expiremental and untested!"
+    echo "!! Warning !!"
+    echo
+
     # Install required Python libs and pip
     dnf -y install gcc libffi-devel openssl-devel python-devel
 
@@ -131,9 +104,8 @@ if [ ! "$(which ansible-playbook)" ]; then
     fi
 
   else
-    echo 'WARN: Could not detect distro or distro unsupported'
-    echo 'WARN: Trying to install ansible via pip without some dependencies'
-    echo 'WARN: Not all functionality of ansible may be available'
+    echo 'FATAL: Distro unsupported!'
+    exit 1;
   fi
 
   pip install -q six --upgrade
@@ -143,7 +115,7 @@ if [ ! "$(which ansible-playbook)" ]; then
   else
     pip install -q ansible=="$ANSIBLE_VERSION"
   fi
-  if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ] || [ -f /etc/oracle-release ] || [ -f /etc/system-release ]; then
+  if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]; then
     # Fix for pycrypto pip / yum issue
     # https://github.com/ansible/ansible/issues/276
     if  ansible --version 2>&1  | grep -q "AttributeError: 'module' object has no attribute 'HAVE_DECL_MPZ_POWM_SEC'" ; then
@@ -154,9 +126,9 @@ if [ ! "$(which ansible-playbook)" ]; then
       yum install -y python-crypto python-paramiko
     fi
     # Fix for urllib3 issue
-    pip uninstall -y urllib3
+    pip uninstall -y urllib3 requests
     yum erase -y python-urllib3
-    yum install -y python-urllib3
+    pip install -y urllib3 requests
   fi
 
 fi
