@@ -6,9 +6,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Always check if a clean install can be updated
-yum -y update
-
 if [ "$1" = "-v" ]; then
   ANSIBLE_VERSION="${2}"
 fi
