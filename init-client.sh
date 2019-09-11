@@ -99,7 +99,36 @@ if [ ! "$(which ansible-playbook)" ]; then
     elif [ -z "$(which pip)" ] && [ -n "$(which easy_install)" ]; then
       easy_install pip
     fi
+    
+  elif [ -f /etc/debian_version ] || grep -qi ubuntu /etc/lsb-release || grep -qi ubuntu /etc/os-release; then
+    wait_for_cloud_init
+    dpkg_check_lock && apt-get update -q
 
+    # Install required Python libs and pip
+    apt_install python-pip python-yaml python-jinja2 python-httplib2 python-paramiko python-pkg-resources libffi-dev
+    [ -n "$( dpkg_check_lock && apt-cache search python-keyczar )" ] && apt_install python-keyczar
+    dpkg_check_lock && apt-cache search ^git$ | grep -q "^git\s" && apt_install git || apt_install git-core
+
+    # If python-pip install failed and setuptools exists, try that
+    if [ -z "$(which pip)" ] && [ -z "$(which easy_install)" ]; then
+      apt_install python-setuptools
+      easy_install pip
+    elif [ -z "$(which pip)" ] && [ -n "$(which easy_install)" ]; then
+      easy_install pip
+    fi
+    # If python-keyczar apt package does not exist, use pip
+    [ -z "$( apt-cache search python-keyczar )" ] && pip install python-keyczar
+
+    # Required for Ubuntu 16 to fix get_url issues
+    pip install -U pyopenssl
+
+    # Install passlib for encrypt
+    apt_install build-essential
+    apt_install python-all-dev python-mysqldb sshpass && pip install pyrax pysphere boto passlib dnspython
+
+    # Install Ansible module dependencies
+    apt_install bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip python-selinux
+    
   else
     echo 'FATAL: Distro unsupported!'
     exit 1;
