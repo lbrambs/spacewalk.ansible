@@ -49,7 +49,7 @@
   
 - name: (Ubuntu) Add Spacewalk Client repo
   apt_repository: 
-    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
+    repo: 'deb [trusted=yes] http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
     state: present 
     filename: spacewalk2.9-debclients.list
     update_cache: yes
@@ -63,7 +63,7 @@
 
 - name: (Ubuntu) Remove Spacewalk Client repo
   apt_repository: 
-    repo: 'deb http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
+    repo: 'deb [trusted=yes] http://download.opensuse.org/repositories/systemsmanagement:/spacewalk:/2.9:/debclients/xUbuntu_{{ ansible_distribution_version }}/ /' 
     state: absent 
     filename: spacewalk2.9-debclients.list
     update_cache: yes
