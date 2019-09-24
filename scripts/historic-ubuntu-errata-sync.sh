@@ -2,8 +2,8 @@
 
 # Import all historic Ubuntu errata's
 
-YEAR=2004 # Set to starting year
-MONTH=10 # Set to starting month
+YEAR=2004 # Set starting year
+MONTH=10 # Set starting month
 
 CURR_YEAR=`date +"%Y"`
 CURR_MONTH=`date +"%-m"`
