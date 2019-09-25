@@ -224,5 +224,5 @@
     minute: "0"
     hour: "*/4"
     user: root
-    job: "sleep $(( ( RANDOM % 240 ) ))m ; /usr/sbin/rhn_check"
+    job: "bash -c 'sleep $(( ( RANDOM % 240 ) ))m' ; /usr/sbin/rhn_check"
     cron_file: ansible_rhn_check
