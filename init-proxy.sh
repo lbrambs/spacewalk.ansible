@@ -138,6 +138,6 @@ printf "[spacewalk-proxy]\nlocalhost ansible_connection=local" > /etc/ansible/ho
 
 # Run ansible
 ANSIBLE=$(which ansible-pull)
-REPO="https://github.com/rhessing/spacewalk.ansible.git"
+REPO="https://github.com/lbrambs/spacewalk.ansible.git"
 ANSIBLE_OPTS="--clean --full spacewalk-proxy.yml"
 ${ANSIBLE} -U ${REPO} ${ANSIBLE_OPTS}

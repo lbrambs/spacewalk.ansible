@@ -164,6 +164,6 @@ printf "[spacewalk-client]\nlocalhost ansible_connection=local" > /etc/ansible/h
 
 # Run ansible
 ANSIBLE=$(which ansible-pull)
-REPO="https://github.com/rhessing/spacewalk.ansible.git"
+REPO="https://github.com/lbrambs/spacewalk.ansible.git"
 ANSIBLE_OPTS="--clean --full spacewalk-client.yml"
 ${ANSIBLE} -U ${REPO} ${ANSIBLE_OPTS}

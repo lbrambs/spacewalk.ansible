@@ -141,6 +141,6 @@ printf "[defaults]\ndeprecation_warnings=False\n" > /etc/ansible/ansible.cfg
 
 # Run ansible
 ANSIBLE=$(which ansible-pull)
-REPO="https://github.com/rhessing/spacewalk.ansible.git"
+REPO="https://github.com/lbrambs/spacewalk.ansible.git"
 ANSIBLE_OPTS="--clean --full spacewalk-server.yml"
 ${ANSIBLE} -U ${REPO} ${ANSIBLE_OPTS}
