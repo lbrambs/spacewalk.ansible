@@ -197,7 +197,7 @@
   when: ansible_distribution == "CentOS"
 
 - name: (CentOS) Remove existing yum repos
-  shell: mv /etc/yum.repos.d/* /etc/yum.repos.d/archive
+  shell: mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/archive
   ignore_errors: yes
   when: ansible_distribution == "CentOS"
   
